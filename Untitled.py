@@ -1,133 +1,89 @@
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": 1,
-   "id": "5ac3b920-4922-4694-bbe2-ef74b631fb4c",
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stderr",
-     "output_type": "stream",
-     "text": [
-      "2024-05-11 19:30:35.890 \n",
-      "  \u001b[33m\u001b[1mWarning:\u001b[0m to view this Streamlit app on a browser, run it with the following\n",
-      "  command:\n",
-      "\n",
-      "    streamlit run /home/codespace/.local/lib/python3.10/site-packages/ipykernel_launcher.py [ARGUMENTS]\n",
-      "2024-05-11 19:30:35.892 Session state does not function when running a script without `streamlit run`\n"
-     ]
-    }
-   ],
-   "source": [
-    "import streamlit as st\n",
-    "import numpy as np\n",
-    "import pandas as pd\n",
-    "import re\n",
-    "from sklearn.model_selection import train_test_split\n",
-    "from sklearn.feature_extraction.text import TfidfVectorizer\n",
-    "from sklearn.linear_model import LogisticRegression\n",
-    "from sklearn.metrics import classification_report\n",
-    "from sklearn.tree import DecisionTreeClassifier\n",
-    "from sklearn.ensemble import RandomForestClassifier\n",
-    "from sklearn.ensemble import GradientBoostingClassifier\n",
-    "\n",
-    "true=pd.read_csv('true.csv')\n",
-    "fake=pd.read_csv('fake.csv')\n",
-    "true['label']=1       #True DataSet\n",
-    "fake['label']=0\n",
-    "news = pd.concat([fake, true],axis=0)\n",
-    "news=news.drop(['title','subject','date'],axis=1)\n",
-    "\n",
-    "news=news.sample(frac=1)\n",
-    "news.reset_index(inplace=True)\n",
-    "news.drop(['index'],axis=1, inplace=True)\n",
-    "\n",
-    "def wordopt(text):\n",
-    "    #Convert into lowercase\n",
-    "    text = text.lower()\n",
-    "\n",
-    "    # Remove URLs\n",
-    "    text = re.sub(r'https?://\\S+|www\\.\\S+','',text)\n",
-    "\n",
-    "    # Remove HTML tags\n",
-    "    text=re.sub(r'<.*?>', '',text)\n",
-    "\n",
-    "    #Remove punctuation\n",
-    "    text=re.sub(r'[^\\w\\s]', '', text)\n",
-    "\n",
-    "    #Remove digits\n",
-    "    text=re.sub(r'\\d', '',text)\n",
-    "\n",
-    "    #Remove newline characters\n",
-    "    text=re.sub(r'\\n', ' ', text)\n",
-    "\n",
-    "    return text\n",
-    "\n",
-    "\n",
-    "news['text'] = news['text'].apply(wordopt)\n",
-    "\n",
-    "x = news['text']        #Dependent variable\n",
-    "y = news['label']\n",
-    "\n",
-    "x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.3)\n",
-    "\n",
-    "\n",
-    "vectorization = TfidfVectorizer()\n",
-    "xv_train = vectorization.fit_transform(x_train)\n",
-    "xv_test = vectorization.transform(x_test)\n",
-    "\n",
-    "\n",
-    "LR = LogisticRegression()\n",
-    "LR.fit(xv_train, y_train)\n",
-    "\n",
-    "\n",
-    "DTC = DecisionTreeClassifier()\n",
-    "DTC.fit(xv_train, y_train)\n",
-    "\n",
-    "rfc = RandomForestClassifier()\n",
-    "rfc.fit(xv_train, y_train)\n",
-    "\n",
-    "\n",
-    "gbc = GradientBoostingClassifier()\n",
-    "gbc.fit(xv_train, y_train)\n",
-    "\n",
-    "st.title('Fake News Detection')\n",
-    "input_text = st.text_input('Enter news Article')\n",
-    "\n",
-    "def prediction(input_text):\n",
-    "    input_data = vectorization.transform([input_text])\n",
-    "    prediction = LR.predict(input_data)\n",
-    "    return prediction[0]\n",
-    "\n",
-    "if input_text:\n",
-    "    pred = prediction(input_text)\n",
-    "    if pred == 0:\n",
-    "        st.write('The News is Fake')\n",
-    "    else:\n",
-    "        st.write('The News is True')"
-   ]
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python 3 (ipykernel)",
-   "language": "python",
-   "name": "python3"
-  },
-  "language_info": {
-   "codemirror_mode": {
-    "name": "ipython",
-    "version": 3
-   },
-   "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
-   "pygments_lexer": "ipython3",
-   "version": "3.10.13"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 5
-}
+import streamlit as st
+import numpy as np
+import pandas as pd
+import re
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+
+true=pd.read_csv('true.csv')
+fake=pd.read_csv('fake.csv')
+true['label']=1       #True DataSet
+fake['label']=0
+news = pd.concat([fake, true],axis=0)
+news=news.drop(['title','subject','date'],axis=1)
+
+news=news.sample(frac=1)
+news.reset_index(inplace=True)
+news.drop(['index'],axis=1, inplace=True)
+
+def wordopt(text):
+    #Convert into lowercase
+    text = text.lower()
+
+    # Remove URLs
+    text = re.sub(r'https?://\S+|www\.\S+','',text)
+
+    # Remove HTML tags
+    text=re.sub(r'<.*?>', '',text)
+
+    #Remove punctuation
+    text=re.sub(r'[^\w\s]', '', text)
+
+    #Remove digits
+    text=re.sub(r'\d', '',text)
+
+    #Remove newline characters
+    text=re.sub(r'\n', ' ', text)
+
+    return text
+
+
+news['text'] = news['text'].apply(wordopt)
+
+x = news['text']        #Dependent variable
+y = news['label']
+
+x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.3)
+
+
+vectorization = TfidfVectorizer()
+xv_train = vectorization.fit_transform(x_train)
+xv_test = vectorization.transform(x_test)
+
+
+LR = LogisticRegression()
+LR.fit(xv_train, y_train)
+# #
+# #
+# # DTC = DecisionTreeClassifier()
+# # DTC.fit(xv_train, y_train)
+# #
+# # rfc = RandomForestClassifier()
+# # rfc.fit(xv_train, y_train)
+#
+#
+# gbc = GradientBoostingClassifier()
+# gbc.fit(xv_train, y_train)
+
+st.title('Fake News Detection')
+input_text = st.text_input('Enter news Article')
+
+def prediction(input_text):
+    input_data = vectorization.transform([input_text])
+    prediction = LR.predict(input_data)
+    return prediction[0]
+
+if input_text:
+    pred = prediction(input_text)
+    if pred == 0:
+        st.write('The News is Fake')
+    else:
+        st.write('The News is True')
+
+        # To Launch Streamlit Webpage Run this command in the terminal -> streamlit run streamlit.py
+        
